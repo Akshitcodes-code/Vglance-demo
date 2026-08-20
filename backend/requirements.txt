@@ -1,0 +1,12 @@
+fastapi
+uvicorn
+psycopg2-binary
+python-dotenv
+requests
+google-generativeai
+yt-dlp
+openai-whisper
+easyocr
+torch
+torchvision
+torchaudio

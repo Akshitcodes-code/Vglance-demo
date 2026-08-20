@@ -6,23 +6,22 @@
   <title>vGlance - Search & Visual Discovery Dashboard</title>
   <meta name="description" content="Next-generation search engine and intelligent discovery platform.">
   
-  <!-- Fonts & CDN Icons (Lucide) -->
+  <!-- Fonts & Icons -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/lucide@latest"></script>
   
-  <!-- Custom Stylesheet -->
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
-  <!-- Mobile Overlay Backdrop -->
+  <!-- Mobile nav backdrop -->
   <div class="sidebar-overlay" id="sidebarOverlay" aria-hidden="true"></div>
 
   <div class="app-container">
     
-    <!-- SIDEBAR NAVIGATION -->
+    <!-- Sidebar -->
     <aside class="sidebar" id="sidebar" aria-label="Main Navigation">
       <div class="sidebar-header">
         <a href="#" class="brand-logo">
@@ -39,7 +38,6 @@
         </button>
       </div>
 
-      <!-- Action Button -->
       <div class="sidebar-action">
         <button class="btn btn-primary btn-new-search" id="newSearchBtn">
           <i data-lucide="plus"></i>
@@ -48,17 +46,14 @@
         </button>
       </div>
 
-      <!-- Search History Section -->
+      <!-- History list injected via JS -->
       <div class="sidebar-section history-section">
         <div class="section-title">
           <span>HISTORY</span>
         </div>
-        <ul class="history-list" id="historyList">
-          <!-- Dynamically hydrated by script.js -->
-        </ul>
+        <ul class="history-list" id="historyList"></ul>
       </div>
 
-      <!-- Sidebar Footer Links -->
       <div class="sidebar-footer">
         <nav class="footer-nav" aria-label="Secondary Navigation">
           <a href="#" class="nav-item">
@@ -77,10 +72,10 @@
       </div>
     </aside>
 
-    <!-- MAIN CONTENT AREA -->
+    <!-- Main area -->
     <main class="main-content">
       
-      <!-- TOP BAR -->
+      <!-- Topbar -->
       <header class="topbar">
         <button class="icon-btn mobile-menu-btn" id="mobileMenuBtn" aria-label="Open Sidebar Menu">
           <i data-lucide="menu"></i>
@@ -92,26 +87,43 @@
         </div>
 
         <div class="topbar-actions">
-          <!-- Theme Toggle -->
+          <!-- Language selector -->
+          <div class="dropdown-wrapper" style="position:relative;">
+            <button class="icon-btn" id="langBtn" aria-label="Select Language">
+              <i data-lucide="globe"></i>
+            </button>
+            <div class="dropdown-menu" id="langMenu" style="min-width:160px; padding:8px;">
+              <div style="display:flex; flex-direction:column; gap:4px;">
+                <button class="lang-option" data-lang="en" style="text-align:left; padding:6px 10px; border-radius:6px; background:transparent; color:var(--text-primary);">🇬🇧 English</button>
+                <button class="lang-option" data-lang="hi" style="text-align:left; padding:6px 10px; border-radius:6px; background:transparent; color:var(--text-primary);">🇮🇳 हिंदी</button>
+                <button class="lang-option" data-lang="es" style="text-align:left; padding:6px 10px; border-radius:6px; background:transparent; color:var(--text-primary);">🇪🇸 Español</button>
+                <button class="lang-option" data-lang="fr" style="text-align:left; padding:6px 10px; border-radius:6px; background:transparent; color:var(--text-primary);">🇫🇷 Français</button>
+                <button class="lang-option" data-lang="ta" style="text-align:left; padding:6px 10px; border-radius:6px; background:transparent; color:var(--text-primary);">🇮🇳 தமிழ்</button>
+                <button class="lang-option" data-lang="te" style="text-align:left; padding:6px 10px; border-radius:6px; background:transparent; color:var(--text-primary);">🇮🇳 తెలుగు</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Theme toggle -->
           <button class="icon-btn" id="themeToggleBtn" aria-label="Toggle Theme Mode">
             <i data-lucide="sun" class="sun-icon"></i>
             <i data-lucide="moon" class="moon-icon"></i>
           </button>
-          <!-- Notification Dropdown -->
+
           <div class="dropdown-wrapper">
             <button class="icon-btn" id="notificationBtn" aria-label="Notifications">
               <i data-lucide="bell"></i>
               <span class="notification-badge"></span>
             </button>
           </div>
-          <!-- User Avatar -->
+          
           <div class="user-avatar" title="User">
             <span>A</span>
           </div>
         </div>
       </header>
 
-      <!-- HERO SEARCH SECTION (Logo & Search Bar) -->
+      <!-- Search hero -->
       <section class="hero-search-section">
         <div class="hero-card hero-card-transparent">
           <div class="hero-brand">
@@ -137,7 +149,7 @@
         </div>
       </section>
 
-      <!-- CATEGORY NAVIGATION -->
+      <!-- Content filters -->
       <nav class="category-tabs-wrapper" aria-label="Content Categories">
         <div class="category-tabs" id="categoryTabs">
           <button class="tab-btn active" data-category="all">
@@ -161,7 +173,7 @@
         </div>
       </nav>
 
-      <!-- REELS / DISCOVERY CAROUSEL SECTION (This stays above search results) -->
+      <!-- Discovery carousel -->
       <section class="reels-section">
         <div class="section-header">
           <h2 class="section-title-heading">Discover Relevant Content</h2>
@@ -174,14 +186,10 @@
             </button>
           </div>
         </div>
-        <div class="reels-container" id="reelsContainer">
-          <!-- Static data populated by script.js -->
-        </div>
+        <div class="reels-container" id="reelsContainer"></div>
       </section>
 
-      <!-- ================================================== -->
-      <!-- SEARCH RESULTS PANEL (MOVED TO THE VERY BOTTOM)    -->
-      <!-- ================================================== -->
+      <!-- Search results container -->
       <div class="search-results-panel" id="searchResultsPanel" hidden>
         <div class="ai-scanner-loader" id="aiScannerLoader" hidden>
           <div class="scanner-visual">
@@ -194,15 +202,12 @@
             <span id="scannerStatusText">Breaking video into keyframes...</span>
           </div>
         </div>
-        <div class="results-body" id="resultsBody" hidden>
-          <!-- Dynamic Results Injected via JS -->
-        </div>
+        <div class="results-body" id="resultsBody" hidden></div>
       </div>
 
     </main>
   </div>
 
-  <!-- JavaScript Modules -->
   <script src="js/script.js"></script>
 </body>
 </html>

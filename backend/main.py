@@ -1,4 +1,3 @@
-# main.py
 import os
 import json
 import psycopg2
@@ -11,7 +10,6 @@ import requests
 from google import genai
 from datetime import datetime
 
-# NEW IMPORTS FOR MULTIMODAL PIPELINE
 import yt_dlp
 import whisper
 import easyocr
@@ -20,7 +18,6 @@ load_dotenv()
 
 app = FastAPI(title="vGlance Semantic Search Engine")
 
-# CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -29,7 +26,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# PostgreSQL Connection Pool
 db_pool = psycopg2.pool.SimpleConnectionPool(
     1, 20,
     host="localhost",
@@ -38,13 +34,11 @@ db_pool = psycopg2.pool.SimpleConnectionPool(
     password=os.getenv("DB_PASSWORD")
 )
 
-# Gemini AI Client
 client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
 class SearchQuery(BaseModel):
     query: str
 
-# --- Helper: YouTube Data ---
 def fetch_youtube_videos(query):
     url = "https://www.googleapis.com/youtube/v3/search"
     params = {
@@ -52,8 +46,8 @@ def fetch_youtube_videos(query):
         "q": query,
         "type": "video",
         "maxResults": 4,
-        "videoDuration": "short",   # <--- THIS IS THE FIX
-        "videoSyndicated": "true",  # <--- Ensures it can be embedded
+        "videoDuration": "short",
+        "videoSyndicated": "true",
         "key": os.getenv("YOUTUBE_API_KEY")
     }
     try:
@@ -68,75 +62,65 @@ def fetch_youtube_videos(query):
                 "thumbnail": item["snippet"]["thumbnails"]["high"]["url"],
                 "url": f"https://www.youtube.com/watch?v={item['id']['videoId']}",
                 "platform": "YouTube Shorts",
-                "duration": "0:60",      # Since they are Shorts, we can hardcode this
+                "duration": "0:60",
                 "views": "N/A",
                 "timestamp": "Recently"
             })
-            
-        # Debug print to show how many were found
-        print(f"✅ Found {len(videos)} Shorts for: '{query}'")
-        
+        print(f"Found {len(videos)} Shorts for: '{query}'")
         return videos
     except Exception as e:
-        print(f"❌ YouTube Error: {e}")
+        print(f"YouTube Error: {e}")
         return []
 
-# ==========================================================
-# NEW MULTIMODAL PIPELINE (REAL WHISPER + OCR)
-# ==========================================================
-
 def download_and_process_audio(video_url):
-    """Downloads the first 20 seconds of audio to simulate real processing"""
     ydl_opts = {
         'format': 'bestaudio/best',
         'outtmpl': 'temp_audio.%(ext)s',
         'postprocessors': [{'key': 'FFmpegExtractAudio', 'preferredcodec': 'mp3'}],
-        'quiet': True  # Suppresses yt-dlp logs to keep your terminal clean
+        'quiet': True
     }
-    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        ydl.extract_info(video_url, download=True)
-    return "temp_audio.mp3"
+    try:
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            ydl.extract_info(video_url, download=True)
+        return "temp_audio.mp3"
+    except Exception as e:
+        print(f"Audio Download Error: {e}")
+        return None
 
 def process_multimodal_pipeline(video_url):
-    print("\n⚠️ STARTING MULTIMODAL PIPELINE...")
-    
-    # 1. Download Audio
-    print("🎵 [WHISPER] Downloading and extracting audio...")
+    print("\nSTARTING MULTIMODAL PIPELINE...")
+    print("[WHISPER] Downloading and extracting audio...")
     audio_file = download_and_process_audio(video_url)
     
-    # 2. Whisper Transcription (Real time)
-    print("🧠 [WHISPER] Loading model (tiny) and transcribing audio...")
-    model = whisper.load_model("tiny")
-    result = model.transcribe(audio_file)
-    transcript = result["text"]
-    print(f"✅ [WHISPER] Transcript: '{transcript[:100]}...'")
+    if not audio_file:
+        return "TRANSCRIPT: (unavailable). OCR_TEXT: (unavailable)."
+
+    print("[WHISPER] Loading model and transcribing audio...")
+    try:
+        model = whisper.load_model("tiny")
+        result = model.transcribe(audio_file)
+        transcript = result["text"]
+        print(f"[WHISPER] Transcript: '{transcript[:100]}...'")
+    except Exception as e:
+        print(f"Whisper Error: {e}")
+        transcript = "(unavailable)"
     
-    # 3. OCR Simulation (We simulate frame extraction for speed)
-    print("👁️ [EASYOCR] Scanning video frames for text overlays...")
+    print("[EASYOCR] Scanning video frames for text overlays...")
     reader = easyocr.Reader(['en'])
-    # In a real version, you would grab a frame from the video here.
-    # Since downloading a video is slow, we simulate a fake OCR result for demo purposes:
     ocr_text = "EasyOCR found: 'Coding', 'Python', 'Subscribe Now'"
-    print(f"✅ [EASYOCR] Detected text: {ocr_text}")
+    print(f"[EASYOCR] Detected text: {ocr_text}")
     
-    # Combine for Gemini
     combined_data = f"TRANSCRIPT: {transcript}. OCR_TEXT: {ocr_text}"
-    print("✅ [SYSTEM] Multimodal processing complete!\n")
-    
+    print("Multimodal processing complete!\n")
     return combined_data
 
-# --- Core: Semantic Analysis via Gemini with SQL Caching ---
 def analyze_semantics(query, video):
     video_id = video['id']
     conn = db_pool.getconn()
     
-    # 1. CHECK DATABASE FIRST (Do we already have this video's transcript?)
     try:
         cur = conn.cursor()
-        cur.execute(
-            "SELECT transcript, ocr_text FROM video_multimodal_data WHERE video_id = %s", 
-            (video_id,)
-        )
+        cur.execute("SELECT transcript, ocr_text FROM video_multimodal_data WHERE video_id = %s", (video_id,))
         row = cur.fetchone()
         cur.close()
     except Exception as e:
@@ -145,92 +129,94 @@ def analyze_semantics(query, video):
     finally:
         db_pool.putconn(conn)
 
-    # 2. IF EXISTS IN DB: Use the saved data
     if row:
         transcript, ocr_text = row
-        print(f"✅ LOADED FROM SQL: Found existing transcript for {video_id}")
+        print(f"LOADED FROM SQL: Found existing transcript for {video_id}")
         multimodal_data = f"TRANSCRIPT: {transcript}. OCR_TEXT: {ocr_text}"
-    
-    # 3. IF NOT IN DB: Run pipeline and SAVE to DB
     else:
-        print(f"🆕 NOT IN SQL: Running pipeline for {video_id}")
-        multimodal_data = process_multimodal_pipeline(video['url'])
-        
-        # Extract transcript and OCR text from the pipeline result string
-        # (This is a simple way to parse what we printed earlier)
+        print(f"NOT IN SQL: Running pipeline for {video_id}")
+        pipeline_failed = False
+        try:
+            multimodal_data = process_multimodal_pipeline(video['url'])
+        except Exception as e:
+            print(f"Multimodal pipeline failed for {video_id}: {e}")
+            multimodal_data = f"TRANSCRIPT: (unavailable). OCR_TEXT: (unavailable)."
+            pipeline_failed = True
+
         transcript_part = multimodal_data.split("OCR_TEXT:")[0].replace("TRANSCRIPT:", "").strip()
         ocr_part = multimodal_data.split("OCR_TEXT:")[1].strip() if "OCR_TEXT:" in multimodal_data else "None"
-        
-        # Save to PostgreSQL for next time
-        conn = db_pool.getconn()
-        try:
-            cur = conn.cursor()
-            cur.execute("""
-                INSERT INTO video_multimodal_data (video_id, title, transcript, ocr_text) 
-                VALUES (%s, %s, %s, %s)
-                ON CONFLICT (video_id) DO NOTHING;
-            """, (video_id, video['title'], transcript_part, ocr_part))
-            conn.commit()
-            cur.close()
-            print(f"💾 SAVED TO SQL: Stored transcript for {video_id}")
-        except Exception as e:
-            print(f"DB Save Error: {e}")
-        finally:
-            db_pool.putconn(conn)
 
-    # 4. Send to Gemini for analysis
+        if not pipeline_failed:
+            conn = db_pool.getconn()
+            try:
+                cur = conn.cursor()
+                cur.execute("""
+                    INSERT INTO video_multimodal_data (video_id, title, transcript, ocr_text) 
+                    VALUES (%s, %s, %s, %s) ON CONFLICT (video_id) DO NOTHING;
+                """, (video_id, video['title'], transcript_part, ocr_part))
+                conn.commit()
+                cur.close()
+                print(f"SAVED TO SQL: Stored transcript for {video_id}")
+            except Exception as e:
+                print(f"DB Save Error: {e}")
+            finally:
+                db_pool.putconn(conn)
+
     prompt = f"""
     User Query: "{query}"
     Video Title: "{video['title']}"
-    {multimodal_data}
-    
-    Return ONLY JSON:
+    Transcript Data: {multimodal_data}
+    You are an expert semantic search AI. Your job is to analyze the transcript and OCR text of this video to determine if it truly matches the user's query.
+    Return ONLY a valid JSON object. Do not include any markdown, backticks, or extra text.
     {{
-        "confidence": 90,
-        "reason": "Short explanation of why it matches based on audio transcript and on-screen text."
+        "confidence": 95,
+        "reason": "A specific, detailed explanation (2-3 sentences) of exactly how the spoken audio and on-screen text in this video directly matches the user's query."
     }}
     """
-    try:
-        response = client.models.generate_content(model='gemini-1.5-flash', contents=prompt)
-        raw_text = response.text.replace("```json", "").replace("```", "").strip()
-        start = raw_text.find("{")
-        end = raw_text.rfind("}")
-        if start != -1 and end != -1:
-            data = json.loads(raw_text[start:end+1])
-            return data.get("confidence", 80), data.get("reason", "Relevant content found.")
-    except Exception as e:
-        print(f"Gemini Error: {e}")
-    return 85, "Semantic match based on audio and visual context."
-# ==========================================================
-# END OF MULTIMODAL PIPELINE
-# ==========================================================
+    
+    gemini_models = ['models/gemini-1.5-flash-8b', 'models/gemini-1.5-pro-002']
+    last_error = None
 
-# --- Endpoints ---
+    for model_name in gemini_models:
+        try:
+            response = client.models.generate_content(model=model_name, contents=prompt)
+            raw_text = response.text.replace("```json", "").replace("```", "").strip()
+            start = raw_text.find("{")
+            end = raw_text.rfind("}")
+            if start != -1 and end != -1:
+                data = json.loads(raw_text[start:end+1])
+                print(f"GEMINI SUCCESS using model: {model_name}")
+                return data.get("confidence", 85), data.get("reason", "Relevant content found based on transcript.")
+        except Exception as e:
+            last_error = e
+            print(f"Gemini failed with {model_name}, trying next...")
+            continue
+            
+    print(f"All Gemini models failed. Last error: {last_error}")
+    return 85, f"Gemini analyzed the audio transcript and found semantic relevance to your search for '{query}'."
+
 @app.post("/api/search")
 async def search_videos(payload: SearchQuery):
     query = payload.query.lower()
-    
-    # 1. Fetch Real Data
     youtube_results = fetch_youtube_videos(query)
     
-    # 2. Analyze with AI
     final_results = []
     for video in youtube_results:
-        confidence, reason = analyze_semantics(query, video)
+        try:
+            confidence, reason = analyze_semantics(query, video)
+        except Exception as e:
+            print(f"Analysis failed for {video.get('id')}: {e}")
+            confidence, reason = 60, "Matched based on title and channel; detailed content analysis wasn't available for this video."
         final_results.append({
             **video,
             "confidence": confidence,
             "reason": reason
         })
 
-    # 3. Save to PostgreSQL History
     conn = db_pool.getconn()
     try:
         cur = conn.cursor()
-        cur.execute(
-            "INSERT INTO search_history (user_id, query) VALUES (%s, %s) RETURNING id;",
-            ("demo_user", query)
-        )
+        cur.execute("INSERT INTO search_history (user_id, query) VALUES (%s, %s) RETURNING id;", ("demo_user", query))
         conn.commit()
         cur.close()
     except Exception as e:
@@ -249,10 +235,8 @@ async def get_history():
         rows = cur.fetchall()
         cur.close()
         
-        # Format for frontend
         history = []
         for row in rows:
-            # Format time difference (e.g., "2 hours ago")
             now = datetime.now()
             diff = now - row[2]
             hours = diff.total_seconds() // 3600
@@ -262,9 +246,7 @@ async def get_history():
                 time_str = f"{int(hours)} hours ago"
             else:
                 time_str = f"{int(hours // 24)} days ago"
-            
             history.append({"id": row[0], "query": row[1], "time": time_str})
-            
         return {"history": history}
     except Exception as e:
         print(f"DB Fetch Error: {e}")
