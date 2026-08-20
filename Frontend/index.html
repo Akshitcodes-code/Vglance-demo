@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>vGlance - Search & Visual Discovery Dashboard</title>
+  <meta name="description" content="Next-generation search engine and intelligent discovery platform.">
+  
+  <!-- Fonts & CDN Icons (Lucide) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Mobile Overlay Backdrop -->
+  <div class="sidebar-overlay" id="sidebarOverlay" aria-hidden="true"></div>
+
+  <div class="app-container">
+    
+    <!-- SIDEBAR NAVIGATION -->
+    <aside class="sidebar" id="sidebar" aria-label="Main Navigation">
+      <div class="sidebar-header">
+        <a href="#" class="brand-logo">
+          <img src="assets/images/logo.png" alt="vGlance Logo" class="sidebar-logo-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+          <div class="logo-icon-fallback" style="display:none;">vG</div>
+          
+          <div class="brand-text">
+            <span class="brand-name">vGlance</span>
+            <span class="brand-tagline">Search & Discovery</span>
+          </div>
+        </a>
+        <button class="icon-btn mobile-close-btn" id="sidebarCloseBtn" aria-label="Close Sidebar">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+
+      <!-- Action Button -->
+      <div class="sidebar-action">
+        <button class="btn btn-primary btn-new-search" id="newSearchBtn">
+          <i data-lucide="plus"></i>
+          <span>New Search</span>
+          <kbd class="shortcut-badge">⌘K</kbd>
+        </button>
+      </div>
+
+      <!-- Search History Section -->
+      <div class="sidebar-section history-section">
+        <div class="section-title">
+          <span>HISTORY</span>
+        </div>
+        <ul class="history-list" id="historyList">
+          <!-- Dynamically hydrated by script.js -->
+        </ul>
+      </div>
+
+      <!-- Sidebar Footer Links -->
+      <div class="sidebar-footer">
+        <nav class="footer-nav" aria-label="Secondary Navigation">
+          <a href="#" class="nav-item">
+            <i data-lucide="bookmark"></i>
+            <span>Bookmarks</span>
+          </a>
+          <a href="#" class="nav-item">
+            <i data-lucide="folder"></i>
+            <span>Collections</span>
+          </a>
+          <a href="#" class="nav-item">
+            <i data-lucide="settings"></i>
+            <span>Settings</span>
+          </a>
+        </nav>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT AREA -->
+    <main class="main-content">
+      
+      <!-- TOP BAR -->
+      <header class="topbar">
+        <button class="icon-btn mobile-menu-btn" id="mobileMenuBtn" aria-label="Open Sidebar Menu">
+          <i data-lucide="menu"></i>
+        </button>
+
+        <div class="topbar-search-status" id="topbarStatus">
+          <span class="status-dot"></span>
+          <span class="status-text">Search Ready</span>
+        </div>
+
+        <div class="topbar-actions">
+          <!-- Theme Toggle -->
+          <button class="icon-btn" id="themeToggleBtn" aria-label="Toggle Theme Mode" title="Toggle Theme">
+            <i data-lucide="sun" class="sun-icon"></i>
+            <i data-lucide="moon" class="moon-icon"></i>
+          </button>
+          <!-- Notification Dropdown Button -->
+          <div class="dropdown-wrapper">
+            <button class="icon-btn" id="notificationBtn" aria-label="Notifications" aria-expanded="false">
+              <i data-lucide="bell"></i>
+              <span class="notification-badge"></span>
+            </button>
+            <div class="dropdown-menu notification-dropdown" id="notificationDropdown" aria-hidden="true">
+              <div class="dropdown-header">
+                <span>Notifications</span>
+                <a href="#" class="mark-read">Mark all as read</a>
+              </div>
+            </div>
+          </div>
+
+          <!-- User Avatar -->
+          <div class="user-avatar" title="Alex Rivera">
+            <span>A</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- HERO SEARCH SECTION -->
+      <section class="hero-search-section">
+        <div class="hero-card hero-card-transparent">
+          <div class="hero-brand">
+            <!-- HERO MAIN LOGO PNG -->
+            <div class="hero-logo-wrapper">
+              <img 
+                src="assets/images/logo.png" 
+                alt="vGlance Logo" 
+                class="hero-logo-img" 
+                onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"
+              />
+              <h1 class="hero-logo-text" style="display:none;">vGlance</h1>
+            </div>
+            
+            <p class="hero-subtitle">Search, discover, and analyze information instantly.</p>
+          </div>
+
+          <!-- Main Input Area -->
+          <form class="search-form" id="searchForm">
+            <div class="search-input-wrapper">
+              <i data-lucide="search" class="search-input-icon"></i>
+              <input 
+                type="text" 
+                id="searchInput" 
+                class="search-input" 
+                placeholder="Search anything..." 
+                autocomplete="off"
+                required
+              />
+              <button type="button" class="icon-btn mic-btn" id="micBtn" aria-label="Voice Search">
+                <i data-lucide="mic"></i>
+              </button>
+            </div>
+
+            <button type="submit" class="search-plus-btn" aria-label="Submit Search Query">
+              <i data-lucide="arrow-right"></i>
+            </button>
+          </form>
+
+          <!-- Dynamic Results Panel with AI Processing Animation -->
+          <div class="search-results-panel" id="searchResultsPanel" hidden>
+            <div class="ai-scanner-loader" id="aiScannerLoader" hidden>
+              <div class="scanner-visual">
+                <div class="scan-line"></div>
+                <div class="frame-corners"></div>
+                <span class="frame-tag" id="scannerTag">Analyzing Frame #024</span>
+              </div>
+              <div class="scanner-info">
+                <div class="ai-status-pulse"></div>
+                <span id="scannerStatusText">Breaking video into keyframes...</span>
+              </div>
+            </div>
+
+            <!-- Results Body -->
+            <div class="results-body" id="resultsBody" hidden>
+              <!-- Dynamic Results Injected via JS -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- CATEGORY NAVIGATION -->
+      <nav class="category-tabs-wrapper" aria-label="Content Categories">
+        <div class="category-tabs" id="categoryTabs">
+          <button class="tab-btn active" data-category="all">
+            <i data-lucide="layout-grid"></i> All
+          </button>
+          <button class="tab-btn" data-category="images">
+            <i data-lucide="image"></i> Images
+          </button>
+          <button class="tab-btn" data-category="videos">
+            <i data-lucide="video"></i> Videos
+          </button>
+          <button class="tab-btn" data-category="for-you">
+            <i data-lucide="compass"></i> Discovery
+          </button>
+          <button class="tab-btn" data-category="trending">
+            <i data-lucide="trending-up"></i> Trending
+          </button>
+          <button class="tab-btn" data-category="educational">
+            <i data-lucide="book-open"></i> Educational
+          </button>
+        </div>
+      </nav>
+
+      <!-- REELS / DISCOVERY CAROUSEL SECTION -->
+      <section class="reels-section">
+        <div class="section-header">
+          <h2 class="section-title-heading">Discover Relevant Content</h2>
+          <div class="carousel-controls">
+            <button class="carousel-btn prev-btn" id="carouselPrevBtn" aria-label="Scroll Carousel Left">
+              <i data-lucide="chevron-left"></i>
+            </button>
+            <button class="carousel-btn next-btn" id="carouselNextBtn" aria-label="Scroll Carousel Right">
+              <i data-lucide="chevron-right"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="reels-container" id="reelsContainer">
+          <!-- Initial Static Data -->
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- JavaScript Modules -->
+  <script src="js/script.js"></script>
+</body>
+</html>
