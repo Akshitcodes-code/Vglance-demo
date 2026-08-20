@@ -1,0 +1,4 @@
+#Ignore all files with specific extension
+*.env
+#Ignore an entire folder
+.vscode/
