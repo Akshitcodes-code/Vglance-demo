@@ -1,5 +1,5 @@
 # vGlance - Semantic Search Engine for Short-Form Videos
-**Team ID:** [Your Team ID]
+**Team ID:** T001
 **Problem Statement ID:** GGSPIU2614
 
 ## 🚀 Project Overview
