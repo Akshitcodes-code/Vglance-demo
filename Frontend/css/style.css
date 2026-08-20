@@ -95,11 +95,19 @@ img { max-width: 100%; display: block; }
 .main-content { flex: 1; margin-left: var(--sidebar-width); padding: 20px 32px 40px 32px; display: flex; flex-direction: column; gap: 28px; transition: margin-left var(--transition-normal); }
 
 .sidebar-overlay {
-  position: fixed; inset: 0; background-color: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(4px); z-index: 90; opacity: 0; visibility: hidden;
-  transition: opacity var(--transition-normal), visibility var(--transition-normal);
+  position: fixed; 
+  inset: 0; 
+  background-color: rgba(0, 0, 0, 0.6); /* Dark Background */
+  backdrop-filter: blur(4px); 
+  z-index: 90; /* Sidebar ke peeche rahega */
+  opacity: 0; 
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
 }
-.sidebar-overlay.active { opacity: 1; visibility: visible; }
+.sidebar-overlay.active { 
+  opacity: 1; 
+  visibility: visible; 
+}
 
 .sidebar {
   width: var(--sidebar-width); height: 100vh; position: fixed; top: 0; left: 0;
@@ -169,7 +177,7 @@ img { max-width: 100%; display: block; }
    6. HERO & SEARCH BAR
    ========================================================================== */
 .hero-search-section { width: 100%; margin-top: -30px; }
-.hero-card.hero-card-transparent { background: transparent !important; border: none !important; box-shadow: none !important; padding: 10px 0 10px 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.hero-card.hero-card-transparent { background: transparent !important; border: none !important; box-shadow: none !important; padding: 10px 0 10px 0; display: flex; flex-direction: column; align-items: center; justify-content: center; margin-bottom: 0px; }
 
 .hero-logo-wrapper { display: flex; justify-content: center; align-items: center; margin-bottom: 20px; }
 .hero-logo-img { height: auto; width: 600px; object-fit: contain; }
@@ -185,7 +193,19 @@ img { max-width: 100%; display: block; }
 .search-plus-btn { width: 72px; height: 72px; border-radius: 50%; background: var(--purple-primary); color: #ffffff; display: flex; align-items: center; justify-content: center; transition: transform var(--transition-fast); }
 .search-plus-btn:hover { transform: scale(1.04); }
 
-.search-results-panel { position: relative; z-index: 1; width: 100%; max-width: 860px; margin-top: 24px; background: rgba(11, 14, 23, 0.85); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 20px; backdrop-filter: blur(12px); animation: fadeIn 0.3s ease-in-out; }
+.search-results-panel {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 860px;
+  margin-top: 0px;      /* <--- GAP FIXED HERE */
+  background: rgba(11, 14, 23, 0.85);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  backdrop-filter: blur(12px);
+  animation: fadeIn 0.3s ease-in-out;
+}
 
 @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 
@@ -205,13 +225,13 @@ img { max-width: 100%; display: block; }
 /* ==========================================================================
    7. CATEGORY TABS & REELS
    ========================================================================== */
-.category-tabs-wrapper { width: 100%; overflow-x: auto; padding-bottom: 4px; }
+.category-tabs-wrapper { width: 100%; overflow-x: auto; padding-bottom: 4px; margin-bottom: 0px; }
 .category-tabs { display: flex; align-items: center; gap: 10px; min-width: max-content; }
 .tab-btn { padding: 9px 18px; border-radius: var(--radius-pill); background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-color); color: var(--text-muted); font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 8px; transition: all var(--transition-fast); white-space: nowrap; }
 .tab-btn:hover { background: rgba(255, 255, 255, 0.07); color: var(--text-primary); }
 .tab-btn.active { background: var(--purple-primary); color: #ffffff; border-color: transparent; }
 
-.reels-section { display: flex; flex-direction: column; gap: 16px; width: 100%; }
+.reels-section { display: flex; flex-direction: column; gap: 16px; width: 100%; margin-bottom: 0px; }
 .section-header { display: flex; align-items: center; justify-content: space-between; }
 .section-title-heading { font-size: 20px; font-weight: 700; letter-spacing: -0.4px; color: var(--text-primary); }
 .carousel-controls { display: flex; align-items: center; gap: 8px; }

@@ -26,7 +26,7 @@
     <aside class="sidebar" id="sidebar" aria-label="Main Navigation">
       <div class="sidebar-header">
         <a href="#" class="brand-logo">
-          <img src="assets/images/logo.png" alt="vGlance Logo" class="sidebar-logo-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+          <img src="assets/images/final-logo.png" alt="vGlance Logo" class="sidebar-logo-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
           <div class="logo-icon-fallback" style="display:none;">vG</div>
           
           <div class="brand-text">
@@ -93,90 +93,47 @@
 
         <div class="topbar-actions">
           <!-- Theme Toggle -->
-          <button class="icon-btn" id="themeToggleBtn" aria-label="Toggle Theme Mode" title="Toggle Theme">
+          <button class="icon-btn" id="themeToggleBtn" aria-label="Toggle Theme Mode">
             <i data-lucide="sun" class="sun-icon"></i>
             <i data-lucide="moon" class="moon-icon"></i>
           </button>
-          <!-- Notification Dropdown Button -->
+          <!-- Notification Dropdown -->
           <div class="dropdown-wrapper">
-            <button class="icon-btn" id="notificationBtn" aria-label="Notifications" aria-expanded="false">
+            <button class="icon-btn" id="notificationBtn" aria-label="Notifications">
               <i data-lucide="bell"></i>
               <span class="notification-badge"></span>
             </button>
-            <div class="dropdown-menu notification-dropdown" id="notificationDropdown" aria-hidden="true">
-              <div class="dropdown-header">
-                <span>Notifications</span>
-                <a href="#" class="mark-read">Mark all as read</a>
-              </div>
-            </div>
           </div>
-
           <!-- User Avatar -->
-          <div class="user-avatar" title="Alex Rivera">
+          <div class="user-avatar" title="User">
             <span>A</span>
           </div>
         </div>
       </header>
 
-      <!-- HERO SEARCH SECTION -->
+      <!-- HERO SEARCH SECTION (Logo & Search Bar) -->
       <section class="hero-search-section">
         <div class="hero-card hero-card-transparent">
           <div class="hero-brand">
-            <!-- HERO MAIN LOGO PNG -->
             <div class="hero-logo-wrapper">
-              <img 
-                src="assets/images/logo.png" 
-                alt="vGlance Logo" 
-                class="hero-logo-img" 
-                onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"
-              />
+              <img src="assets/images/logo.png" alt="vGlance Logo" class="hero-logo-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
               <h1 class="hero-logo-text" style="display:none;">vGlance</h1>
             </div>
-            
             <p class="hero-subtitle">Search, discover, and analyze information instantly.</p>
           </div>
 
-          <!-- Main Input Area -->
           <form class="search-form" id="searchForm">
             <div class="search-input-wrapper">
               <i data-lucide="search" class="search-input-icon"></i>
-              <input 
-                type="text" 
-                id="searchInput" 
-                class="search-input" 
-                placeholder="Search anything..." 
-                autocomplete="off"
-                required
-              />
+              <input type="text" id="searchInput" class="search-input" placeholder="Search anything..." autocomplete="off" required />
               <button type="button" class="icon-btn mic-btn" id="micBtn" aria-label="Voice Search">
                 <i data-lucide="mic"></i>
               </button>
             </div>
-
             <button type="submit" class="search-plus-btn" aria-label="Submit Search Query">
               <i data-lucide="arrow-right"></i>
             </button>
           </form>
-
-          <!-- Dynamic Results Panel with AI Processing Animation -->
-          <div class="search-results-panel" id="searchResultsPanel" hidden>
-            <div class="ai-scanner-loader" id="aiScannerLoader" hidden>
-              <div class="scanner-visual">
-                <div class="scan-line"></div>
-                <div class="frame-corners"></div>
-                <span class="frame-tag" id="scannerTag">Analyzing Frame #024</span>
-              </div>
-              <div class="scanner-info">
-                <div class="ai-status-pulse"></div>
-                <span id="scannerStatusText">Breaking video into keyframes...</span>
-              </div>
-            </div>
-
-            <!-- Results Body -->
-            <div class="results-body" id="resultsBody" hidden>
-              <!-- Dynamic Results Injected via JS -->
-            </div>
-          </div>
         </div>
       </section>
 
@@ -204,7 +161,7 @@
         </div>
       </nav>
 
-      <!-- REELS / DISCOVERY CAROUSEL SECTION -->
+      <!-- REELS / DISCOVERY CAROUSEL SECTION (This stays above search results) -->
       <section class="reels-section">
         <div class="section-header">
           <h2 class="section-title-heading">Discover Relevant Content</h2>
@@ -217,11 +174,30 @@
             </button>
           </div>
         </div>
-
         <div class="reels-container" id="reelsContainer">
-          <!-- Initial Static Data -->
+          <!-- Static data populated by script.js -->
         </div>
       </section>
+
+      <!-- ================================================== -->
+      <!-- SEARCH RESULTS PANEL (MOVED TO THE VERY BOTTOM)    -->
+      <!-- ================================================== -->
+      <div class="search-results-panel" id="searchResultsPanel" hidden>
+        <div class="ai-scanner-loader" id="aiScannerLoader" hidden>
+          <div class="scanner-visual">
+            <div class="scan-line"></div>
+            <div class="frame-corners"></div>
+            <span class="frame-tag" id="scannerTag">Analyzing Frame #024</span>
+          </div>
+          <div class="scanner-info">
+            <div class="ai-status-pulse"></div>
+            <span id="scannerStatusText">Breaking video into keyframes...</span>
+          </div>
+        </div>
+        <div class="results-body" id="resultsBody" hidden>
+          <!-- Dynamic Results Injected via JS -->
+        </div>
+      </div>
 
     </main>
   </div>

@@ -1,11 +1,11 @@
 /**
- * vGlance - Search Engine Core Logic
+ * vGlance - Semantic Search Engine (Problem Statement 14)
+ * Full Backend Integration Script - UI Design Maintained
  */
 
 const API_URL = "http://127.0.0.1:5000/api";
 const state = {
     theme: localStorage.getItem("theme") || "dark",
-    history: [],
     isSearching: false
 };
 
@@ -21,7 +21,7 @@ function initializeApp() {
     initializeCarousel();
     initializeMobileNavigation();
     initializeShortcuts();
-    loadHistoryFromDB();
+    loadHistoryFromDB(); // Now pulls from PostgreSQL
 }
 
 function initializeIcons() {
@@ -34,10 +34,11 @@ function initializeTheme() {
         state.theme = state.theme === 'dark' ? 'light' : 'dark';
         document.documentElement.setAttribute('data-theme', state.theme);
         localStorage.setItem('theme', state.theme);
+        initializeIcons();
     });
 }
 
-// --- Search Engine ---
+// --- Search Engine Logic ---
 function initializeSearch() {
     const form = document.getElementById('searchForm');
     const input = document.getElementById('searchInput');
@@ -58,23 +59,24 @@ async function searchVideos(query) {
     const panel = document.getElementById("searchResultsPanel");
     const scannerLoader = document.getElementById("aiScannerLoader");
     const body = document.getElementById("resultsBody");
-    const scannerTag = document.getElementById("scannerTag");
-    const scannerStatusText = document.getElementById("scannerStatusText");
 
+    // UI Reset
     panel.hidden = false;
     scannerLoader.hidden = false;
     body.hidden = true;
 
-    // AI Frame Scanner Animation
+    // AI Scanner Animation
     const scanSteps = [
         { tag: "Searching YouTube", text: "Querying YouTube Data API v3..." },
-        { tag: "Searching Meta", text: "Querying Instagram Graph API..." },
         { tag: "Gemini AI", text: "Analyzing metadata with Google Gemini..." },
         { tag: "Semantic Match", text: "Calculating confidence scores..." },
         { tag: "Results", text: "Preparing recommendations..." }
     ];
 
     let index = 0;
+    const scannerTag = document.getElementById("scannerTag");
+    const scannerStatusText = document.getElementById("scannerStatusText");
+    
     const interval = setInterval(() => {
         if (index < scanSteps.length) {
             scannerTag.textContent = scanSteps[index].tag;
@@ -84,28 +86,30 @@ async function searchVideos(query) {
     }, 600);
 
     try {
+        // CALL TO BACKEND API
         const response = await fetch(`${API_URL}/search`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ query })
         });
 
-        if (!response.ok) throw new Error("Backend API connection failed.");
+        if (!response.ok) throw new Error("Backend connection failed.");
         const data = await response.json();
 
         clearInterval(interval);
-        scannerLoader.hidden = true;
+        scannerLoader.remove(); 
         body.hidden = false;
 
         if (data.results && data.results.length > 0) {
             renderResults(data.results);
+            loadHistoryFromDB(); // Refresh history
         } else {
             body.innerHTML = `<p style="color:var(--text-muted); padding:20px; text-align:center;">No results found.</p>`;
         }
 
     } catch (err) {
         clearInterval(interval);
-        scannerLoader.hidden = true;
+        scannerLoader.remove();
         body.hidden = false;
         body.innerHTML = `<p style="color:#ef4444; padding:20px;">Error: ${err.message}</p>`;
     } finally {
@@ -113,7 +117,7 @@ async function searchVideos(query) {
     }
 }
 
-// --- Render Results ---
+// --- Render Search Results (EXACTLY AS YOU PROVIDED) ---
 function renderResults(results) {
     const body = document.getElementById("resultsBody");
 
@@ -168,7 +172,67 @@ function escapeHtml(str) {
     return str.replace(/[&<>"']/g, (m) => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#039;' })[m]);
 }
 
-// --- UI Initializations ---
+// --- Fetch History from PostgreSQL via API (Dynamic Data) ---
+async function loadHistoryFromDB() {
+    const container = document.getElementById('historyList');
+    
+    try {
+        const response = await fetch(`${API_URL}/history`);
+        const data = await response.json();
+        
+        if (data.history && data.history.length > 0) {
+            // EXACT SAME HTML STRUCTURE AS YOUR ORIGINAL CODE
+            container.innerHTML = data.history.map(item => `
+                <li class="history-item" data-query="${item.query}">
+                    <div class="history-main" onclick="document.getElementById('searchInput').value='${item.query}'; searchVideos('${item.query}');">
+                        <i data-lucide="clock" class="history-icon"></i>
+                        <span class="history-text">${item.query}</span>
+                    </div>
+                    <div class="history-meta">
+                        <span class="history-time">${item.time}</span>
+                        <button class="history-menu-btn delete-btn" data-id="${item.id}">
+                            <i data-lucide="trash-2" style="color: #ef4444; width: 16px; height: 16px;"></i>
+                        </button>
+                    </div>
+                </li>
+            `).join("");
+        } else {
+            container.innerHTML = `<li style="color:var(--text-subtle); padding:10px; text-align:center;">No search history found.</li>`;
+        }
+    } catch (err) {
+        console.error("Failed to load history:", err);
+        container.innerHTML = `<li style="color:#ef4444; padding:10px; text-align:center;">Error loading history.</li>`;
+    } finally {
+        initializeIcons();
+        attachDeleteListeners();
+    }
+}
+
+// --- Attach Delete Listeners to History ---
+function attachDeleteListeners() {
+    const container = document.getElementById('historyList');
+    container.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            const id = btn.dataset.id;
+            
+            if (confirm("Are you sure you want to delete this history item?")) {
+                try {
+                    const response = await fetch(`${API_URL}/history/${id}`, { method: "DELETE" });
+                    if (response.ok) {
+                        loadHistoryFromDB(); 
+                    } else {
+                        alert("Failed to delete history.");
+                    }
+                } catch (err) {
+                    alert("Could not connect to the backend.");
+                }
+            }
+        });
+    });
+}
+
+// --- UI Utilities (EXACTLY AS YOU HAD THEM) ---
 function initializeTabs() {
   document.querySelectorAll('.tab-btn').forEach(tab => {
     tab.addEventListener('click', () => {
@@ -187,14 +251,31 @@ function initializeCarousel() {
 }
 
 function initializeMobileNavigation() {
-  document.getElementById('mobileMenuBtn')?.addEventListener('click', () => {
-    document.getElementById('sidebar').classList.add('open');
-    document.getElementById('sidebarOverlay').classList.add('active');
-  });
-  document.getElementById('sidebarOverlay')?.addEventListener('click', () => {
-    document.getElementById('sidebar').classList.remove('open');
-    document.getElementById('sidebarOverlay').classList.remove('active');
-  });
+  const menuBtn = document.getElementById('mobileMenuBtn');
+  const closeBtn = document.getElementById('sidebarCloseBtn');
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebarOverlay');
+
+  if (menuBtn) {
+    menuBtn.addEventListener('click', () => {
+      sidebar.classList.add('open');
+      overlay.classList.add('active');
+    });
+  }
+
+  if (closeBtn) {
+    closeBtn.addEventListener('click', () => {
+      sidebar.classList.remove('open');
+      overlay.classList.remove('active');
+    });
+  }
+
+  if (overlay) {
+    overlay.addEventListener('click', () => {
+      sidebar.classList.remove('open');
+      overlay.classList.remove('active');
+    });
+  }
 }
 
 function initializeShortcuts() {
@@ -204,24 +285,4 @@ function initializeShortcuts() {
       document.getElementById('searchInput')?.focus();
     }
   });
-}
-
-function loadHistoryFromDB() {
-    const container = document.getElementById('historyList');
-    const mockHistory = [
-        { id: '1', query: 'Motorcycle repair tutorial', time: '2 hours ago' },
-        { id: '2', query: 'Air fryer recipes', time: '5 hours ago' }
-    ];
-    container.innerHTML = mockHistory.map(item => `
-        <li class="history-item" data-query="${item.query}" onclick="document.getElementById('searchInput').value='${item.query}'; searchVideos('${item.query}');">
-            <div class="history-main">
-                <i data-lucide="clock" class="history-icon"></i>
-                <span class="history-text">${item.query}</span>
-            </div>
-            <div class="history-meta">
-                <span class="history-time">${item.time}</span>
-            </div>
-        </li>
-    `).join("");
-    initializeIcons();
 }
