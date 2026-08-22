@@ -55,7 +55,7 @@ def fetch_youtube_videos(query):
         "key": os.getenv("YOUTUBE_API_KEY")
     }
     try:
-        print(f"🔍 Searching YouTube API for: '{query}'")
+        print(f"[SEARCH] Searching YouTube API for: '{query}'")
         response = requests.get(url, params=params)
         data = response.json()
         videos = []
@@ -71,10 +71,10 @@ def fetch_youtube_videos(query):
                 "views": "N/A",
                 "timestamp": "Recently"
             })
-        print(f"✅ Found {len(videos)} videos from YouTube API")
+        print(f"[SUCCESS] Found {len(videos)} videos from YouTube API")
         return videos
     except Exception as e:
-        print(f"❌ YouTube Error: {e}")
+        print(f"[ERROR] YouTube Error: {e}")
         return []
 
 def download_and_process_audio(video_url):
@@ -99,25 +99,25 @@ def download_and_process_audio(video_url):
     }
     
     try:
-        print(f"📥 Downloading audio from: {video_url}")
+        print(f"[DOWNLOAD] Downloading audio from: {video_url}")
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             ydl.extract_info(video_url, download=True)
         
         # Check if file exists
         if os.path.exists(temp_path):
-            print(f"✅ Audio downloaded successfully: {temp_path}")
+            print(f"[SUCCESS] Audio downloaded successfully: {temp_path}")
             return temp_path
         else:
             # Try alternative extension
             alt_path = temp_path.replace('.mp3', '.m4a')
             if os.path.exists(alt_path):
-                print(f"✅ Audio downloaded (m4a format): {alt_path}")
+                print(f"[SUCCESS] Audio downloaded (m4a format): {alt_path}")
                 return alt_path
-            print(f"❌ Audio file not found at expected path")
+            print(f"[ERROR] Audio file not found at expected path")
             return None
             
     except Exception as e:
-        print(f"❌ Audio Download Error: {e}")
+        print(f"[ERROR] Audio Download Error: {e}")
         # Clean up temp file if it exists
         if os.path.exists(temp_path):
             os.remove(temp_path)
@@ -125,10 +125,10 @@ def download_and_process_audio(video_url):
 
 def process_multimodal_pipeline(video_url, video_title="video"):
     """Complete multimodal pipeline: Audio download → Whisper transcription → OCR analysis"""
-    print("\n🚀 STARTING MULTIMODAL PIPELINE...")
+    print("\n[PIPELINE] STARTING MULTIMODAL PIPELINE...")
     
     # Step 1: Download and extract audio
-    print("📥 Step 1/3: Downloading and extracting audio...")
+    print("[STEP 1/3] Downloading and extracting audio...")
     audio_file = download_and_process_audio(video_url)
     
     if not audio_file:
@@ -136,7 +136,7 @@ def process_multimodal_pipeline(video_url, video_title="video"):
         return "TRANSCRIPT: (unavailable - download failed). OCR_TEXT: (unavailable - download failed)."
 
     # Step 2: Whisper transcription
-    print("🎙️ Step 2/3: Loading Whisper model and transcribing audio...")
+    print("[STEP 2/3] Loading Whisper model and transcribing audio...")
     transcript = "(unavailable)"
     try:
         # Use tiny model for speed, can upgrade to base/small for better accuracy
@@ -146,16 +146,16 @@ def process_multimodal_pipeline(video_url, video_title="video"):
         
         # Check if transcript is meaningful
         if len(transcript.strip()) < 10 or transcript.strip() in ['...', '....', '.....']:
-            print(f"⚠️ Whisper transcript too short or unclear, using title as fallback")
+            print(f"[WARNING] Whisper transcript too short or unclear, using title as fallback")
             transcript = f"Video title suggests: {video_title}"
         else:
-            print(f"✅ Whisper transcript: '{transcript[:150]}...'")
+            print(f"[SUCCESS] Whisper transcript: '{transcript[:150]}...'")
     except Exception as e:
-        print(f"❌ Whisper Error: {e}")
+        print(f"[ERROR] Whisper Error: {e}")
         transcript = "(transcription failed)"
     
     # Step 3: OCR analysis (simulated for demo - real OCR requires video frames)
-    print("🔍 Step 3/3: Performing OCR analysis on video content...")
+    print("[STEP 3/3] Performing OCR analysis on video content...")
     ocr_text = "(unavailable)"
     try:
         # Note: Real OCR would require downloading video frames
@@ -167,28 +167,28 @@ def process_multimodal_pipeline(video_url, video_title="video"):
         # For demo, we'll simulate OCR detection
         # In production: results = reader.readframes(frame_images)
         ocr_text = "Text overlays detection available in production mode"
-        print(f"✅ OCR analysis complete")
+        print(f"[SUCCESS] OCR analysis complete")
     except Exception as e:
-        print(f"❌ OCR Error: {e}")
+        print(f"[ERROR] OCR Error: {e}")
         ocr_text = "(OCR failed)"
     
     # Clean up temporary audio file
     try:
         if audio_file and os.path.exists(audio_file):
             os.remove(audio_file)
-            print(f"🧹 Cleaned up temporary audio file")
+            print(f"[CLEANUP] Cleaned up temporary audio file")
     except Exception as e:
-        print(f"⚠️ Cleanup warning: {e}")
+        print(f"[WARNING] Cleanup warning: {e}")
     
     combined_data = f"TRANSCRIPT: {transcript}. OCR_TEXT: {ocr_text}"
-    print("✅ Multimodal processing complete!\n")
+    print("[SUCCESS] Multimodal processing complete!\n")
     return combined_data
 
 def analyze_semantics(query, video):
     video_id = video['id']
     video_url = video['url']
     
-    print(f"\n🎬 Processing video: {video['title']}")
+    print(f"\n[ANALYSIS] Processing video: {video['title']}")
     
     try:
         # Use the actual multimodal pipeline with Whisper and OCR
@@ -228,15 +228,15 @@ def analyze_semantics(query, video):
         
         for model_name in model_attempts:
             try:
-                print(f"🤖 Trying Gemini model: {model_name}")
+                print(f"[GEMINI] Trying model: {model_name}")
                 # Use Chat.send_message as recommended instead of models.generate_content
                 chat = client.chats.create(model=model_name)
                 response = chat.send_message(prompt)
                 result_text = response.text
-                print(f"✅ Successfully used model: {model_name}")
+                print(f"[SUCCESS] Successfully used model: {model_name}")
                 break
             except Exception as model_error:
-                print(f"⚠️ Model {model_name} failed: {model_error}")
+                print(f"[WARNING] Model {model_name} failed: {model_error}")
                 continue
         
         if result_text:
@@ -253,13 +253,13 @@ def analyze_semantics(query, video):
                 elif line.startswith('REASON:'):
                     reason = line.split(':', 1)[1].strip()
             
-            print(f"✅ Analysis complete - Confidence: {confidence}%")
+            print(f"[SUCCESS] Analysis complete - Confidence: {confidence}%")
             return confidence, reason
         else:
             raise Exception("All Gemini models failed")
         
     except Exception as e:
-        print(f"❌ Semantic analysis error: {e}")
+        print(f"[ERROR] Semantic analysis error: {e}")
         # Fallback to title-based matching
         confidence = random.randint(70, 90)
         reason = f"Matched based on title relevance to '{query}'. Content analysis unavailable due to AI service limitations."
