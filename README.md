@@ -140,9 +140,16 @@ Server-Sent Events (SSE) provide streaming updates from backend to frontend, sho
 
 ## 📄 License
 
-This project is developed for the Smart India Hackathon 2024.
+This project is developed for the Smart India Hackathon 2026.
 
 ## 👨‍💻 Development Team
+
+- Anmol verma(Leader) - Frontend 
+- Drishti - UI/UX Designer + PPT creator
+- Abhay Avasthi - Deployer
+- Aman - Debugger 
+- Dev - UI/UX Designer
+- Ayush Adhikari(Me) - AI/ML + Backend
 
 Built with passion for AI-powered search technology.
 
