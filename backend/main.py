@@ -215,11 +215,18 @@ def analyze_semantics(query, video):
         REASON: [Your detailed reasoning]
         """
         
-        # Try different Gemini models with fallback using the correct API
-        models_to_try = ["models/gemini-1.5-flash", "models/gemini-1.5-pro", "models/gemini-pro", "models/gemini-1.0-pro"]
+        # Try different Gemini model formats with fallback
+        # Using stable available models from the API
+        model_attempts = [
+            "models/gemini-2.5-flash",        # Stable flash model
+            "models/gemini-2.5-pro",          # Stable pro model
+            "models/gemini-flash-latest",     # Latest flash
+            "models/gemini-pro-latest",       # Latest pro
+        ]
+        
         result_text = None
         
-        for model_name in models_to_try:
+        for model_name in model_attempts:
             try:
                 print(f"🤖 Trying Gemini model: {model_name}")
                 response = client.models.generate_content(
