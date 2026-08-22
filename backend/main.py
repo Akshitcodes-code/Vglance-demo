@@ -215,8 +215,8 @@ def analyze_semantics(query, video):
         REASON: [Your detailed reasoning]
         """
         
-        # Try different Gemini models with fallback
-        models_to_try = ["gemini-1.5-pro", "gemini-pro", "gemini-1.0-pro"]
+        # Try different Gemini models with fallback using the correct API
+        models_to_try = ["models/gemini-1.5-flash", "models/gemini-1.5-pro", "models/gemini-pro", "models/gemini-1.0-pro"]
         result_text = None
         
         for model_name in models_to_try:
