@@ -10,3 +10,7 @@ desktop.ini
 #Ignore OS files
 .DS_Store
 Thumbs.db
+#Ignore documentation files (keep local only)
+FULLSTACK_LEARNING_GUIDE.md
+IMPLEMENTATION_SUMMARY.md
+JUDGE_QA_PREPARATION.md
