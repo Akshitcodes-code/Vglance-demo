@@ -44,71 +44,7 @@ class SearchQuery(BaseModel):
     query: str
 
 def fetch_youtube_videos(query):
-    your_videos = [
-        {
-            "id": "U6unD_PE1jE",
-            "title": "Breathtaking Kerala Backwaters Travel Vlog",
-            "creator": "BE CINEMATIC",
-            "thumbnail": "https://i.ytimg.com/vi/U6unD_PE1jE/maxresdefault.jpg",
-            "url": f"https://youtube.com/shorts/U6unD_PE1jE?si=3FPbGTtHxPOxFYGn",
-            "platform": "YouTube Shorts",
-            "duration": "0:45",
-            "views": "N/A",
-            "timestamp": "Just now"
-        },
-        {
-            "id": "rN51LFNz0NU",
-            "title": "Exploring the Streets of Old Delhi",
-            "creator": "BE CINEMATIC",
-            "thumbnail": "https://i.ytimg.com/vi/rN51LFNz0NU/maxresdefault.jpg",
-            "url": f"https://youtube.com/shorts/rN51LFNz0NU?si=J-8aELLWDsoNOXhb",
-            "platform": "YouTube Shorts",
-            "duration": "0:30",
-            "views": "N/A",
-            "timestamp": "Just now"
-        },
-        {
-            "id": "t1t_glKhHVk",   # was "Yt1t_glKhHVk" — didn't match url/thumbnail
-            "title": "Sometimes, you don't need answers—just a quiet place under the sky.",
-            "creator": "BE CINEMATIC",
-            "thumbnail": "https://i.ytimg.com/vi/t1t_glKhHVk/hqdefault.jpg",  # was maxresdefault
-            "url": "https://youtube.com/shorts/t1t_glKhHVk?si=C-n3DyGFrY6626Ra",
-            "platform": "YouTube Shorts",
-            "duration": "0:60",
-            "views": "N/A",
-            "timestamp": "Just now"
-        },
-        {
-            "id": "DVPYtMxVLns",
-            "title": "Sunset at Varanasi Ghats - Spiritual India",
-            "creator": "BE CINEMATIC",
-            "thumbnail": "https://i.ytimg.com/vi/DVPYtMxVLns/maxresdefault.jpg",
-            "url": f"https://youtube.com/shorts/DVPYtMxVLns?si=5HiU9RvO5sDX1l2R",
-            "platform": "YouTube Shorts",
-            "duration": "0:60",
-            "views": "N/A",
-            "timestamp": "Just now"
-        },
-        {
-            "id": "cXMP-ijyIe8",
-            "title": "Just me, the sky, and a little bit of peace",
-            "creator": "BE CINEMATIC",
-            "thumbnail": "https://i.ytimg.com/vi/cXMP-ijyIe8/maxresdefault.jpg",
-            "url": f"https://youtube.com/shorts/cXMP-ijyIe8?si=QSEY5cH9l5BltJpE",
-            "platform": "YouTube Shorts",
-            "duration": "0:60",
-            "views": "N/A",
-            "timestamp": "Just now"
-        }
-    ]
-
-    # IF USER SEARCHES FOR TRAVEL, INSTANTLY RETURN YOUR VIDEOS
-    travel_keywords = ["travel", "shorts", "india", "kerala", "delhi", "varanasi", "vlog", "tour", "trip"]
-    if any(keyword in query.lower() for keyword in travel_keywords):
-        print(f"✅ Found {len(your_videos)} custom travel Shorts for: '{query}'")
-        return your_videos
-    
-    # For any other query, use the YouTube API
+    # Always use the YouTube API for actual search results
     url = "https://www.googleapis.com/youtube/v3/search"
     params = {
         "part": "snippet",
@@ -119,6 +55,7 @@ def fetch_youtube_videos(query):
         "key": os.getenv("YOUTUBE_API_KEY")
     }
     try:
+        print(f"🔍 Searching YouTube API for: '{query}'")
         response = requests.get(url, params=params)
         data = response.json()
         videos = []
@@ -129,11 +66,12 @@ def fetch_youtube_videos(query):
                 "creator": item["snippet"]["channelTitle"],
                 "thumbnail": item["snippet"]["thumbnails"]["high"]["url"],
                 "url": f"https://www.youtube.com/watch?v={item['id']['videoId']}",
-                "platform": "YouTube Shorts",
+                "platform": "YouTube",
                 "duration": "0:60",
                 "views": "N/A",
                 "timestamp": "Recently"
             })
+        print(f"✅ Found {len(videos)} videos from YouTube API")
         return videos
     except Exception as e:
         print(f"❌ YouTube Error: {e}")
