@@ -218,10 +218,10 @@ def analyze_semantics(query, video):
         # Try different Gemini model formats with fallback
         # Using stable available models from the API
         model_attempts = [
-            "models/gemini-2.5-flash",        # Stable flash model
-            "models/gemini-2.5-pro",          # Stable pro model
-            "models/gemini-flash-latest",     # Latest flash
-            "models/gemini-pro-latest",       # Latest pro
+            "gemini-2.5-flash",        # Stable flash model (without models/ prefix)
+            "gemini-2.5-pro",          # Stable pro model
+            "gemini-flash-latest",     # Latest flash
+            "gemini-pro-latest",       # Latest pro
         ]
         
         result_text = None
@@ -229,10 +229,9 @@ def analyze_semantics(query, video):
         for model_name in model_attempts:
             try:
                 print(f"🤖 Trying Gemini model: {model_name}")
-                response = client.models.generate_content(
-                    model=model_name,
-                    contents=prompt
-                )
+                # Use Chat.send_message as recommended instead of models.generate_content
+                chat = client.chats.create(model=model_name)
+                response = chat.send_message(prompt)
                 result_text = response.text
                 print(f"✅ Successfully used model: {model_name}")
                 break
