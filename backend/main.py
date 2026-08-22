@@ -185,7 +185,7 @@ def download_and_process_audio(video_url):
             os.remove(temp_path)
         return None
 
-def process_multimodal_pipeline(video_url):
+def process_multimodal_pipeline(video_url, video_title="video"):
     """Complete multimodal pipeline: Audio download → Whisper transcription → OCR analysis"""
     print("\n🚀 STARTING MULTIMODAL PIPELINE...")
     
@@ -205,7 +205,13 @@ def process_multimodal_pipeline(video_url):
         model = whisper.load_model("tiny")
         result = model.transcribe(audio_file, fp16=False)  # fp16=False for compatibility
         transcript = result["text"]
-        print(f"✅ Whisper transcript: '{transcript[:150]}...'")
+        
+        # Check if transcript is meaningful
+        if len(transcript.strip()) < 10 or transcript.strip() in ['...', '....', '.....']:
+            print(f"⚠️ Whisper transcript too short or unclear, using title as fallback")
+            transcript = f"Video title suggests: {video_title}"
+        else:
+            print(f"✅ Whisper transcript: '{transcript[:150]}...'")
     except Exception as e:
         print(f"❌ Whisper Error: {e}")
         transcript = "(transcription failed)"
@@ -248,9 +254,9 @@ def analyze_semantics(query, video):
     
     try:
         # Use the actual multimodal pipeline with Whisper and OCR
-        multimodal_data = process_multimodal_pipeline(video_url)
+        multimodal_data = process_multimodal_pipeline(video_url, video['title'])
         
-        # Use Gemini AI for semantic analysis
+        # Use Gemini AI for semantic analysis with fallback models
         prompt = f"""
         Analyze this video content for semantic matching with the user's search query.
         
@@ -271,34 +277,48 @@ def analyze_semantics(query, video):
         REASON: [Your detailed reasoning]
         """
         
-        response = client.models.generate_content(
-            model="gemini-1.5-flash",
-            contents=prompt
-        )
+        # Try different Gemini models with fallback
+        models_to_try = ["gemini-1.5-pro", "gemini-pro", "gemini-1.0-pro"]
+        result_text = None
         
-        result_text = response.text
+        for model_name in models_to_try:
+            try:
+                print(f"🤖 Trying Gemini model: {model_name}")
+                response = client.models.generate_content(
+                    model=model_name,
+                    contents=prompt
+                )
+                result_text = response.text
+                print(f"✅ Successfully used model: {model_name}")
+                break
+            except Exception as model_error:
+                print(f"⚠️ Model {model_name} failed: {model_error}")
+                continue
         
-        # Parse the response
-        confidence = 85  # Default fallback
-        reason = "Video matches your search based on title and content analysis."
-        
-        for line in result_text.split('\n'):
-            if line.startswith('CONFIDENCE:'):
-                try:
-                    confidence = int(line.split(':')[1].strip())
-                except:
-                    confidence = 85
-            elif line.startswith('REASON:'):
-                reason = line.split(':', 1)[1].strip()
-        
-        print(f"✅ Analysis complete - Confidence: {confidence}%")
-        return confidence, reason
+        if result_text:
+            # Parse the response
+            confidence = 85  # Default fallback
+            reason = "Video matches your search based on title and content analysis."
+            
+            for line in result_text.split('\n'):
+                if line.startswith('CONFIDENCE:'):
+                    try:
+                        confidence = int(line.split(':')[1].strip())
+                    except:
+                        confidence = 85
+                elif line.startswith('REASON:'):
+                    reason = line.split(':', 1)[1].strip()
+            
+            print(f"✅ Analysis complete - Confidence: {confidence}%")
+            return confidence, reason
+        else:
+            raise Exception("All Gemini models failed")
         
     except Exception as e:
         print(f"❌ Semantic analysis error: {e}")
         # Fallback to title-based matching
         confidence = random.randint(70, 90)
-        reason = f"Matched based on title relevance to '{query}'. Content analysis unavailable."
+        reason = f"Matched based on title relevance to '{query}'. Content analysis unavailable due to AI service limitations."
         return confidence, reason
 def save_search_history(query):
     conn = db_pool.getconn()
