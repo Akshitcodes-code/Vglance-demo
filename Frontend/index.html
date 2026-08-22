@@ -190,7 +190,7 @@
       </section>
 
       <!-- Search results container -->
-      <div class="search-results-panel" id="searchResultsPanel" hidden>
+      <div class="search-results-panel" id="searchResultsPanel" hidden style="height: auto; min-height: 0;">
         <div class="ai-scanner-loader" id="aiScannerLoader" hidden>
           <div class="scanner-visual">
             <div class="scan-line"></div>
@@ -200,6 +200,13 @@
           <div class="scanner-info">
             <div class="ai-status-pulse"></div>
             <span id="scannerStatusText">Breaking video into keyframes...</span>
+          </div>
+          <!-- Progress bar for ChatGPT-like experience -->
+          <div class="progress-container">
+            <div class="progress-bar" id="progressBar">
+              <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <span class="progress-text" id="progressText">Initializing...</span>
           </div>
         </div>
         <div class="results-body" id="resultsBody" hidden></div>

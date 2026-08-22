@@ -10,3 +10,4 @@ easyocr
 torch
 torchvision
 torchaudio
+httpx

@@ -2,3 +2,11 @@
 *.env
 #Ignore an entire folder
 .vscode/
+#Ignore temporary files
+*.mp3
+*.m4a
+temp_*
+desktop.ini
+#Ignore OS files
+.DS_Store
+Thumbs.db
